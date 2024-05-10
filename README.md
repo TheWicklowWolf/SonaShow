@@ -12,7 +12,6 @@ Web GUI for finding similar shows to selected Sonarr shows.
 ## Run using docker-compose
 
 ```yaml
-version: "2.1"
 services:
   sonashow:
     image: thewicklowwolf/sonashow:latest
@@ -31,7 +30,7 @@ Certain values can be set via environment variables:
 
 * __sonarr_address__: The URL for Sonarr. Defaults to `http://192.168.1.2:8686`.
 * __sonarr_api_key__: The API key for Sonarr. Defaults to ``.
-* __root_folder_path__: The root folder path for music. Defaults to `/data/media/music/`.
+* __root_folder_path__: The root folder path for TV Shows. Defaults to `/data/media/shows/`.
 * __tvdb_api_key__: The API key for TVDB. Defaults to ``.
 * __tmdb_api_key__: The API key for TMDB. Defaults to ``.
 * __fallback_to_top_result__: Whether to use the top result if no match is found. Defaults to `False`.
