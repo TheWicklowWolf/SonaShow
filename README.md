@@ -37,7 +37,7 @@ Certain values can be set via environment variables:
 * __sonarr_api_timeout__: Timeout duration for Sonarr API calls. Defaults to `120`.
 * __quality_profile_id__: Quality profile ID in Sonarr. Defaults to `1`.
 * __metadata_profile_id__: Metadata profile ID in Sonarr. Defaults to `1`
-* __search_for_missing_albums__: Whether to start searching for albums when adding artists. Defaults to `False`
+* __search_for_missing_episodes__: Whether to start searching for missing episodes when adding shows. Defaults to `False`
 * __dry_run_adding_to_sonarr__: Whether to run without adding artists in Sonarr. Defaults to `False`
 * __minimum_rating__: Minimum Show Rating. Defaults to `5.5`.
 * __minimum_votes__: Minimum Vote Count. Defaults to `50`.
