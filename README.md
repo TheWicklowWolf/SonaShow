@@ -28,7 +28,7 @@ services:
 
 Certain values can be set via environment variables:
 
-* __sonarr_address__: The URL for Sonarr. Defaults to `http://192.168.1.2:8686`.
+* __sonarr_address__: The URL for Sonarr. Defaults to `http://192.168.1.2:8989`.
 * __sonarr_api_key__: The API key for Sonarr. Defaults to ``.
 * __root_folder_path__: The root folder path for TV Shows. Defaults to `/data/media/shows/`.
 * __tvdb_api_key__: The API key for TVDB. Defaults to ``.
