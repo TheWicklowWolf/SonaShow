@@ -11,6 +11,7 @@ import requests
 from thefuzz import fuzz
 from unidecode import unidecode
 import re
+from iso639 import Lang
 
 
 class DataHandler:
@@ -46,6 +47,7 @@ class DataHandler:
             "dry_run_adding_to_sonarr": False,
             "minimum_rating": 5.5,
             "minimum_votes": 50,
+            "language_choice": "all",
         }
 
         # Load settings from environmental variables (which take precedence) over the configuration file.
@@ -70,6 +72,7 @@ class DataHandler:
         self.minimum_rating = float(minimum_rating) if minimum_rating else ""
         minimum_votes = os.environ.get("minimum_votes", "")
         self.minimum_votes = int(minimum_votes) if minimum_votes else ""
+        self.language_choice = os.environ.get("language_choice", "")
 
         # Load variables from the configuration file if not set by environmental variables.
         try:
@@ -180,7 +183,7 @@ class DataHandler:
             return None
 
     def request_similar_tv_shows(self, tv_show_id):
-        url = f"https://api.themoviedb.org/3/tv/{tv_show_id}/similar"
+        url = f"https://api.themoviedb.org/3/tv/{tv_show_id}/recommendations"
         params = {"api_key": self.tmdb_api_key}
         response = requests.get(url, params=params)
         data = response.json()
@@ -188,7 +191,8 @@ class DataHandler:
 
         for show in data["results"]:
             if show.get("vote_average", 0) >= self.minimum_rating and show.get("vote_count", 0) >= self.minimum_votes:
-                ret_list.append(show)
+                if show.get("original_language", "en") == self.language_choice or self.language_choice == "all":
+                    ret_list.append(show)
 
         return ret_list
 
@@ -236,7 +240,8 @@ class DataHandler:
                             genres = ", ".join(self.map_genre_ids_to_names(show.get("genre_ids", [])))
                             overview = show.get("overview", "")
                             popularity = show.get("popularity", "")
-                            original_language = show.get("original_language", "")
+                            original_language_code = show.get("original_language", "en")
+                            original_language = Lang(original_language_code)
                             vote_count = show.get("vote_count", 0)
                             vote_avg = show.get("vote_average", 0)
                             img_link = show.get("poster_path", "")
@@ -256,8 +261,9 @@ class DataHandler:
                                 "Votes": f"Votes: {vote_count}",
                                 "Rating": f"Rating: {vote_avg}",
                                 "Overview": overview,
-                                "Language": original_language,
+                                "Language": original_language.name,
                                 "Popularity": popularity,
+                                "Base_Show": show_name,
                             }
                             self.raw_new_shows.append(exclusive_show)
                             socketio.emit("more_shows_loaded", [exclusive_show])
@@ -433,6 +439,7 @@ class DataHandler:
                         "dry_run_adding_to_sonarr": self.dry_run_adding_to_sonarr,
                         "minimum_rating": self.minimum_rating,
                         "minimum_votes": self.minimum_votes,
+                        "language_choice": self.language_choice,
                     },
                     json_file,
                     indent=4,

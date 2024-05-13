@@ -41,6 +41,7 @@ Certain values can be set via environment variables:
 * __dry_run_adding_to_sonarr__: Whether to run without adding artists in Sonarr. Defaults to `False`
 * __minimum_rating__: Minimum Show Rating. Defaults to `5.5`.
 * __minimum_votes__: Minimum Vote Count. Defaults to `50`.
+* __language_choice__: Chosen Language in ISO-639 two letter format. Defaults to `all`.
 
 ---
 

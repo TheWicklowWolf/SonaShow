@@ -348,7 +348,7 @@ function show_overview_modal(show) {
     var modal_body = document.getElementById('modal-body');
 
     modal_title.textContent = show.Name;
-    modal_body.innerHTML = `${show.Overview}<br><br>Language: ${show.Language.toUpperCase()}<br>Popularity: ${show.Popularity}`;
+    modal_body.innerHTML = `${show.Overview}<br><br>Language: ${show.Language}<br>Popularity: ${show.Popularity}<br><br>Comparable to: ${show.Base_Show}`;
 
     var overview_modal = new bootstrap.Modal(document.getElementById('overview-modal'));
     overview_modal.show();
