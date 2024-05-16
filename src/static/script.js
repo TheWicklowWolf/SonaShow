@@ -72,7 +72,7 @@ function append_shows(shows) {
         show_col.querySelector('.add-to-sonarr-btn').addEventListener('click', function () {
             var add_button = this;
             add_button.disabled = true;
-            add_to_sonarr(show.Name);
+            add_to_sonarr(show.Name, show.Year);
         });
         show_col.querySelector('.get-overview-btn').addEventListener('click', function () {
             overview_req(show);
@@ -100,9 +100,9 @@ function append_shows(shows) {
     });
 }
 
-function add_to_sonarr(show_name) {
+function add_to_sonarr(show_name, show_year) {
     if (socket.connected) {
-        socket.emit('adder', encodeURIComponent(show_name));
+        socket.emit('adder', [encodeURIComponent(show_name), show_year]);
     }
     else {
         show_toast("Connection Lost", "Please reload to continue.");
@@ -292,7 +292,7 @@ socket.on("refresh_show", (show) => {
                 add_button.classList.add('btn-secondary');
                 add_button.disabled = true;
                 add_button.textContent = show.Status;
-            } else if (show.Status === "Failed to Add" || show.Status === "Invalid Path") {
+            } else if (show.Status === "Failed to Add" || show.Status === "Invalid Path" || show.Status === "Invalid Series ID") {
                 card_body.classList.add('status-red');
                 add_button.classList.remove('btn-primary');
                 add_button.classList.add('btn-danger');

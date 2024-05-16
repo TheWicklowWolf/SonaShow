@@ -294,11 +294,12 @@ class DataHandler:
             finally:
                 self.search_in_progress_flag = False
 
-    def add_shows(self, raw_show_name):
+    def add_shows(self, data):
         try:
+            raw_show_name, show_year = data
             show_name = urllib.parse.unquote(raw_show_name)
             show_folder = show_name.replace("/", " ")
-            tvdb_id = self.request_tvdb_id(show_name)
+            tvdb_id = self.request_tvdb_id(show_name, show_year)
             if tvdb_id:
                 sonarr_url = f"{self.sonarr_address}/api/v3/series"
                 headers = {"X-Api-Key": self.sonarr_api_key}
@@ -370,7 +371,7 @@ class DataHandler:
         token = response.json()["data"]["token"]
         return token
 
-    def request_tvdb_id(self, show_name):
+    def request_tvdb_id(self, show_name, show_year):
         tvdb_id = None
         cleaned_show_name = urllib.parse.quote_plus(show_name)
         tvdb_url = f"https://api4.thetvdb.com/v4/search?query={cleaned_show_name}"
@@ -383,9 +384,9 @@ class DataHandler:
             if "data" in tvdb_data:
                 shows = tvdb_data["data"]
                 for show in shows:
-                    match_ratio = fuzz.ratio(show_name.lower(), show["name"].lower())
+                    match_ratio = fuzz.ratio(f"{show_name.lower()} ({show_year})", show["name"].lower())
                     decoded_match_ratio = fuzz.ratio(unidecode(show_name.lower()), unidecode(show["name"].lower()))
-                    if match_ratio > 90 or decoded_match_ratio > 90:
+                    if match_ratio > 90 or decoded_match_ratio > 90 and show_year == show["year"]:
                         tvdb_id = show["tvdb_id"]
                         self.sonashow_logger.info(f"Show '{show_name}' matched '{show['name']}' with TVDB_ID: {tvdb_id}  Match Ratio: {max(match_ratio, decoded_match_ratio)}")
                         break
