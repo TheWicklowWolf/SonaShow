@@ -111,8 +111,8 @@ class DataHandler:
 
     def automated_startup(self):
         self.request_shows_from_sonarr(checked=True)
-        artists = [x["name"] for x in self.sonarr_items]
-        self.start(artists)
+        items = [x["name"] for x in self.sonarr_items]
+        self.start(items)
 
     def connection(self):
         if self.similar_shows:
