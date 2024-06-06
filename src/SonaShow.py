@@ -30,6 +30,14 @@ class DataHandler:
         if not os.path.exists(self.config_folder):
             os.makedirs(self.config_folder)
         self.load_environ_or_config_settings()
+        if self.auto_start:
+            try:
+                auto_start_thread = threading.Timer(self.auto_start_delay, self.automated_startup)
+                auto_start_thread.daemon = True
+                auto_start_thread.start()
+
+            except Exception as e:
+                self.sonashow_logger.error(f"Auto Start Error: {str(e)}")
 
     def load_environ_or_config_settings(self):
         # Defaults
@@ -48,6 +56,8 @@ class DataHandler:
             "minimum_rating": 5.5,
             "minimum_votes": 50,
             "language_choice": "all",
+            "auto_start": False,
+            "auto_start_delay": 60,
         }
 
         # Load settings from environmental variables (which take precedence) over the configuration file.
@@ -73,6 +83,10 @@ class DataHandler:
         minimum_votes = os.environ.get("minimum_votes", "")
         self.minimum_votes = int(minimum_votes) if minimum_votes else ""
         self.language_choice = os.environ.get("language_choice", "")
+        auto_start = os.environ.get("auto_start", "")
+        self.auto_start = auto_start.lower() == "true" if auto_start != "" else ""
+        auto_start_delay = os.environ.get("auto_start_delay", "")
+        self.auto_start_delay = float(auto_start_delay) if auto_start_delay else ""
 
         # Load variables from the configuration file if not set by environmental variables.
         try:
@@ -94,6 +108,11 @@ class DataHandler:
 
         # Save config.
         self.save_config_to_file()
+
+    def automated_startup(self):
+        self.request_shows_from_sonarr(checked=True)
+        artists = [x["name"] for x in self.sonarr_items]
+        self.start(artists)
 
     def connection(self):
         if self.similar_shows:
@@ -144,7 +163,7 @@ class DataHandler:
             thread.daemon = True
             thread.start()
 
-    def request_shows_from_sonarr(self):
+    def request_shows_from_sonarr(self, checked=False):
         try:
             self.sonashow_logger.info(f"Getting Shows from Sonarr")
             self.sonarr_items = []
@@ -154,7 +173,7 @@ class DataHandler:
 
             if response.status_code == 200:
                 self.full_sonarr_show_list = response.json()
-                self.sonarr_items = [{"name": re.sub(r" \(\d{4}\)", "", unidecode(show["title"], replace_str=" ")), "checked": False} for show in self.full_sonarr_show_list]
+                self.sonarr_items = [{"name": re.sub(r" \(\d{4}\)", "", unidecode(show["title"], replace_str=" ")), "checked": checked} for show in self.full_sonarr_show_list]
                 self.sonarr_items.sort(key=lambda x: x["name"].lower())
                 self.cleaned_sonarr_items = [item["name"].lower() for item in self.sonarr_items]
                 status = "Success"
@@ -441,6 +460,8 @@ class DataHandler:
                         "minimum_rating": self.minimum_rating,
                         "minimum_votes": self.minimum_votes,
                         "language_choice": self.language_choice,
+                        "auto_start": self.auto_start,
+                        "auto_start_delay": self.auto_start_delay,
                     },
                     json_file,
                     indent=4,
