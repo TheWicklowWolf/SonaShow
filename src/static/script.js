@@ -312,11 +312,7 @@ socket.on('more_shows_loaded', function (data) {
 });
 
 socket.on('clear', function () {
-    var show_row = document.getElementById('show-row');
-    var show_cards = show_row.querySelectorAll('#show-column');
-    show_cards.forEach(function (card) {
-        card.remove();
-    });
+    clear_all();
 });
 
 socket.on("new_toast_msg", function (data) {
@@ -324,11 +320,19 @@ socket.on("new_toast_msg", function (data) {
 });
 
 socket.on("disconnect", function () {
-    show_toast("Connection Lost", "Please reconnect to continue.");
+    show_toast("Connection Lost", "Please refresh to continue.");
+    clear_all();
 });
 
-let overview_request_flag = false;
+function clear_all() {
+    var show_row = document.getElementById('show-row');
+    var show_cards = show_row.querySelectorAll('#show-column');
+    show_cards.forEach(function (card) {
+        card.remove();
+    });
+}
 
+let overview_request_flag = false;
 function overview_req(show) {
     if (!overview_request_flag) {
         overview_request_flag = true;
