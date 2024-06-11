@@ -22,7 +22,7 @@ class DataHandler:
         self.new_found_shows_counter = 0
         self.clients_connected_counter = 0
         self.config_folder = "config"
-        self.similar_shows = []
+        self.recommended_shows = []
         self.sonarr_items = []
         self.cleaned_sonarr_items = []
         self.stop_event = threading.Event()
@@ -115,15 +115,14 @@ class DataHandler:
         self.start(items)
 
     def connection(self):
-        if self.similar_shows:
+        if self.recommended_shows:
             if self.clients_connected_counter == 0:
-                if len(self.similar_shows) > 15:
-                    self.similar_shows = random.sample(self.similar_shows, 15)
+                if len(self.recommended_shows) > 25:
+                    self.recommended_shows = random.sample(self.recommended_shows, 25)
                 else:
                     self.sonashow_logger.info(f"Shuffling Shows")
-                    random.shuffle(self.similar_shows)
-                self.raw_new_shows = []
-            socketio.emit("more_shows_loaded", self.similar_shows)
+                    random.shuffle(self.recommended_shows)
+            socketio.emit("more_shows_loaded", self.recommended_shows)
 
         self.clients_connected_counter += 1
 
@@ -134,9 +133,8 @@ class DataHandler:
         try:
             socketio.emit("clear")
             self.new_found_shows_counter = 1
-            self.raw_new_shows = []
             self.shows_to_use_in_search = []
-            self.similar_shows = []
+            self.recommended_shows = []
 
             for item in self.sonarr_items:
                 item_name = item["name"]
@@ -244,7 +242,7 @@ class DataHandler:
                 self.sonashow_logger.info(f"Searching for new shows")
                 self.new_found_shows_counter = 0
                 self.search_in_progress_flag = True
-                random_shows = random.sample(self.shows_to_use_in_search, min(5, len(self.shows_to_use_in_search)))
+                random_shows = random.sample(self.shows_to_use_in_search, min(10, len(self.shows_to_use_in_search)))
 
                 for show_name in random_shows:
                     if self.stop_event.is_set():
@@ -255,44 +253,45 @@ class DataHandler:
                         if self.stop_event.is_set():
                             break
                         cleaned_show = unidecode(show["name"]).lower()
-                        if cleaned_show not in self.cleaned_sonarr_items and not any(show["name"] == item["Name"] for item in self.raw_new_shows):
-                            genres = ", ".join(self.map_genre_ids_to_names(show.get("genre_ids", [])))
-                            overview = show.get("overview", "")
-                            popularity = show.get("popularity", "")
-                            original_language_code = show.get("original_language", "en")
-                            original_language = Lang(original_language_code)
-                            vote_count = show.get("vote_count", 0)
-                            vote_avg = show.get("vote_average", 0)
-                            img_link = show.get("poster_path", "")
-                            date_string = show.get("first_air_date", "0000-01-01")
-                            year = date_string.split("-")[0]
-                            if img_link:
-                                img_url = f"https://image.tmdb.org/t/p/original/{img_link}"
-                            else:
-                                img_url = "https://via.placeholder.com/300x200"
+                        if cleaned_show in self.cleaned_sonarr_items:
+                            continue
+                        if any(show["name"] == item["Name"] for item in self.recommended_shows):
+                            continue
+                        genres = ", ".join(self.map_genre_ids_to_names(show.get("genre_ids", [])))
+                        overview = show.get("overview", "")
+                        popularity = show.get("popularity", "")
+                        original_language_code = show.get("original_language", "en")
+                        original_language = Lang(original_language_code)
+                        vote_count = show.get("vote_count", 0)
+                        vote_avg = show.get("vote_average", 0)
+                        img_link = show.get("poster_path", "")
+                        date_string = show.get("first_air_date", "0000-01-01")
+                        year = date_string.split("-")[0]
+                        if img_link:
+                            img_url = f"https://image.tmdb.org/t/p/original/{img_link}"
+                        else:
+                            img_url = "https://via.placeholder.com/300x200"
 
-                            exclusive_show = {
-                                "Name": show["name"],
-                                "Year": year if year else "0000",
-                                "Genre": genres,
-                                "Status": "",
-                                "Img_Link": img_url,
-                                "Votes": f"Votes: {vote_count}",
-                                "Rating": f"Rating: {vote_avg}",
-                                "Overview": overview,
-                                "Language": original_language.name,
-                                "Popularity": popularity,
-                                "Base_Show": show_name,
-                            }
-                            self.raw_new_shows.append(exclusive_show)
-                            socketio.emit("more_shows_loaded", [exclusive_show])
-                            self.new_found_shows_counter += 1
+                        exclusive_show = {
+                            "Name": show["name"],
+                            "Year": year if year else "0000",
+                            "Genre": genres,
+                            "Status": "",
+                            "Img_Link": img_url,
+                            "Votes": f"Votes: {vote_count}",
+                            "Rating": f"Rating: {vote_avg}",
+                            "Overview": overview,
+                            "Language": original_language.name,
+                            "Popularity": popularity,
+                            "Base_Show": show_name,
+                        }
+                        self.recommended_shows.append(exclusive_show)
+                        socketio.emit("more_shows_loaded", [exclusive_show])
+                        self.new_found_shows_counter += 1
 
                 if self.new_found_shows_counter == 0:
                     self.sonashow_logger.info("Search Exhausted - Try selecting more shows from existing Sonarr library")
                     socketio.emit("new_toast_msg", {"title": "Search Exhausted", "message": "Try selecting more shows from existing Sonarr library"})
-                else:
-                    self.similar_shows.extend(self.raw_new_shows)
 
             except Exception as e:
                 self.sonashow_logger.error(f"TheMovieDB Error: {str(e)}")
@@ -372,7 +371,7 @@ class DataHandler:
                 self.sonashow_logger.info(f"No Matching Show for: '{show_name}' in The Movie Database.")
                 socketio.emit("new_toast_msg", {"title": "Failed to add Show", "message": f"No Matching Show for: '{show_name}' in The Movie Database."})
 
-            for item in self.similar_shows:
+            for item in self.recommended_shows:
                 if item["Name"] == show_name:
                     item["Status"] = status
                     socketio.emit("refresh_show", item)
