@@ -72,6 +72,7 @@ function append_shows(shows) {
         show_col.querySelector('.add-to-sonarr-btn').addEventListener('click', function () {
             var add_button = this;
             add_button.disabled = true;
+            add_button.textContent = "Adding...";
             add_to_sonarr(show.Name, show.Year);
         });
         show_col.querySelector('.get-overview-btn').addEventListener('click', function () {
