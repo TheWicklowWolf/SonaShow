@@ -18,6 +18,13 @@ class DataHandler:
     def __init__(self):
         logging.basicConfig(level=logging.INFO, format="%(message)s")
         self.sonashow_logger = logging.getLogger()
+
+        app_name = os.path.basename(__file__).replace(".py", "")
+        release_version = os.environ.get("RELEASE_VERSION", "unknown")
+        self.sonashow_logger.warning(f"{'*' * 50}\n")
+        self.sonashow_logger.warning(f"{app_name} Version: {release_version}\n")
+        self.sonashow_logger.warning(f"{'*' * 50}")
+
         self.search_in_progress_flag = False
         self.new_found_shows_counter = 0
         self.clients_connected_counter = 0
