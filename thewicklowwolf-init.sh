@@ -1,7 +1,7 @@
 #!/bin/sh
 
 echo -e "\033[1;32mTheWicklowWolf\033[0m"
-echo -e "\033[1;34mRadaRec\033[0m"
+echo -e "\033[1;34mSonaShow\033[0m"
 echo "Initializing app..."
 
 cat << 'EOF'
@@ -39,9 +39,9 @@ echo "-----------------"
 
 # Create the required directories with the correct permissions
 echo "Setting up directories.."
-mkdir -p /radarec/config
-chown -R ${PUID}:${PGID} /radarec
+mkdir -p /sonashow/config
+chown -R ${PUID}:${PGID} /sonashow
 
 # Start the application with the specified user permissions
-echo "Running RadaRec..."
-exec su-exec ${PUID}:${PGID} gunicorn src.RadaRec:app -c gunicorn_config.py
+echo "Running SonaShow..."
+exec su-exec ${PUID}:${PGID} gunicorn src.SonaShow:app -c gunicorn_config.py

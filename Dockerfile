@@ -8,8 +8,8 @@ ENV RELEASE_VERSION=${RELEASE_VERSION}
 RUN apk update && apk add --no-cache su-exec
 
 # Create directories and set permissions
-COPY . /radarec
-WORKDIR /radarec
+COPY . /sonashow
+WORKDIR /sonashow
 
 # Install requirements
 RUN pip install --no-cache-dir -r requirements.txt
