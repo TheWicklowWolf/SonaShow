@@ -1,9 +1,9 @@
-gunicorn
-gevent<25.0.0
-gevent-websocket
+gunicorn==25.1.0
+gevent==24.11.1
+gevent-websocket==0.10.1
 flask==3.1.2
-flask_socketio
-requests
-thefuzz
-Unidecode
-iso639-lang
+flask_socketio==5.6.0
+requests==2.32.5
+thefuzz==0.22.1
+Unidecode==1.4.0
+iso639-lang==2.6.3
